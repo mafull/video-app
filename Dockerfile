@@ -1,38 +1,26 @@
-# https://github.com/DavidAStevenson/cpp-helloworld-docker
-FROM ubuntu:latest
+# docker build . -t video-app:0.1.0
+# docker run --rm -it video-app:0.1.0
+
+## STAGE 1 ##
+
+FROM cpp-build-base:0.1.0 AS build
+
+WORKDIR /src
+
+COPY CMakeLists.txt src/* ./
+
+RUN cmake . && make
 
 
-# https://solarianprogrammer.com/2017/12/14/clang-in-docker-container-cpp-17-development/
-RUN apt-get update && apt-get install -y \
-    xz-utils \
-    build-essential \
-    curl \
-    libc++1 \
-&& rm -rf /var/lib/apt/lists/* \
-&& curl -SL http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar -xJC . \
-&& mv clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_9.0.0 \
-&& echo 'export PATH=/clang_9.0.0/bin:$PATH' >> /root/.bashrc \
-&& echo 'export LD_LIBRARY_PATH=/clang_9.0.0/lib:$LD_LIBRARY_PATH' >> /root/.bashrc
+## STAGE 2 ##
 
-    #clang \
-    #clang-format \
-    #clang-tidy
+# Idelaly, run from base Ubuntu - currently get a linker error
+# https://askubuntu.com/questions/575505/glibcxx-3-4-20-not-found-how-to-fix-this-error
+# FROM ubuntu:bionic
+FROM cpp-build-base:0.1.0
 
-COPY . /usr/src/video-app
-WORKDIR /usr/src/video-app
+WORKDIR /opt/video-app
 
-SHELL ["/bin/bash", "-c"]
-RUN source ~/.bashrc
-# RUN clang-tidy src/* -- \
-#     -std=c++17
-RUN /clang_9.0.0/bin/clang++ \
-    -std=c++17 \
-    -stdlib=libc++ \
-    -I src \
-    src/*.cpp
+COPY --from=build /src/video-app ./
 
-CMD ["./a.out"]
-# CMD ["/bin/bash"]
-# CMD ["clang-tidy", "src/Test.cpp", "--", "-std=c++17", "&&", "cat", "src/Test.cpp"]
-# CMD ["clang-format", "-i", "src/Test.cpp", "&&", "ls"]
-#"src/Test.cpp"]
+CMD ["./video-app"]
