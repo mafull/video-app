@@ -2,7 +2,20 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+let counter = 1;
 function App() {
+  const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onopen = () => {
+      setInterval(() => ws.send(JSON.stringify({ hello: "me", counter: counter++ })), 5000);
+    };
+    ws.onmessage = (event) => {
+      console.log(event);
+    };
+    ws.onclose = () => {
+      ws.close();
+    };
+
   return (
     <div className="App">
       <header className="App-header">
