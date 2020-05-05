@@ -1,9 +1,9 @@
-# docker build . -t video-app:0.1.0
-# docker run --rm -it video-app:0.1.0
+# docker build . -t video-app
+# docker run --rm -it video-app
 
 ## STAGE 1 ##
 
-FROM cpp-build-base:0.1.0 AS build
+FROM cpp-build-base AS build
 
 WORKDIR /src
 
@@ -17,11 +17,13 @@ RUN cmake . && make
 # Ideally, run from base Ubuntu - currently get a linker error
 # https://askubuntu.com/questions/575505/glibcxx-3-4-20-not-found-how-to-fix-this-error
 # FROM ubuntu:bionic
-FROM cpp-build-base:0.1.0
+FROM cpp-build-base
 
 WORKDIR /opt/video-app
 
 COPY --from=build /src/video-app ./
 
 EXPOSE 8080
-CMD ["websocketd", "--port=8080", "./video-app"]
+# CMD ["/bin/bash"]
+CMD ["websocketd", "-devconsole", "--port=8080", "./video-app"]
+# CMD ["websocketd", "--port=8080", "./video-app"]

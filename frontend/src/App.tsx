@@ -1,36 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-let counter = 1;
-function App() {
-  const ws = new WebSocket('ws://localhost:8080');
+const ws = new WebSocket('ws://localhost:8080');
 
     ws.onopen = () => {
       setInterval(() => ws.send(JSON.stringify({ hello: "me", counter: counter++ })), 5000);
-    };
-    ws.onmessage = (event) => {
-      console.log(event);
     };
     ws.onclose = () => {
       ws.close();
     };
 
+
+
+let counter = 1;
+function App() {
+  const [events, setEvents] = useState<any[]>([]);
+
+    ws.onmessage = (event) => {
+      console.log(event);
+      setEvents([event, ...events]);
+    };
+
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <ul>
+          {events.map((e, idx) => <li key={idx}>{e.data}</li>)}
+        </ul>
       </header>
     </div>
   );

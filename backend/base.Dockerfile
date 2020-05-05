@@ -1,4 +1,4 @@
-# docker build -f base.Dockerfile . -t cpp-build-base:0.1.0
+# docker build -f base.Dockerfile . -t cpp-build-base
 
 FROM ubuntu:bionic
 
