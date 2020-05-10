@@ -11,6 +11,8 @@
 #include <thread>
 #include <opencv2/opencv.hpp>
 
+#include "base64.hpp"
+
 #include "Video.hpp"
 
 using std::cout;
@@ -32,15 +34,48 @@ int main()
     cout << "Listing contents of directory " << picsPath << endl;
     bool firstFile = true;
     for (const auto& entry : fs::directory_iterator(picsPath)) {
-        if (!fs::is_directory(entry) && entry.path().extension() == ".mp4" && firstFile) {
+        cout << "> (" << (fs::is_directory(entry) ? "DIR" : "FIL") << ")" << entry.path().filename() << endl;
+        if (!fs::is_directory(entry) && (entry.path().extension() == ".MP4" || entry.path().extension() == ".mp4") && firstFile) {
             firstFile = false;
-            cv::VideoCapture cap(entry.path().filename());
+            cout << "Opening " << entry.path() << "..." << endl;
+            cv::VideoCapture cap(entry.path());
             if (!cap.isOpened()) {
                 cout << "Error opening video stream or file" << endl;
                 return -1;
             }
+
+            double fps = cap.get(cv::CAP_PROP_FPS) / 0.5;
+            const int waitTimeMs = 1000 / fps;
+            cout << fps << " - " << waitTimeMs << endl;
+
+
+            int counter = 0;
+            while (1) {
+                cout << "started" << endl;
+                cv::Mat frame;
+                cap >> frame;
+
+                if (frame.empty()) break;
+
+                // if (counter++ % 2 > 0) continue;
+
+                std::vector<base64::byte> buf;
+                cv::imencode(".jpg", frame, buf);
+                // auto *encoded = reinterpret_cast<unsigned char*>(buf.data());
+                std::string encodedStr = base64::encode(buf);
+
+                // cout << "frame: " << frame << endl;
+                // cout << "frame: " << frame.reshape(0,1) << endl;
+                cout << "frame:" << encodedStr << endl;
+
+                char c = cv::waitKey(waitTimeMs);
+                if (c == 88) break;
+
+                // break;
+            }
+
+            cap.release();
         }
-        cout << "> (" << (fs::is_directory(entry) ? "DIR" : "FIL") << ")" << entry.path().filename() << endl;
     }
 
     // const Video video("/dir/hello");
@@ -54,7 +89,7 @@ int main()
     using namespace std::chrono_literals;
     int counter = 0;
     cout << "Gunna start counting" << std::endl;
-    while (1) {
+    while (counter < 10) {
         cout << "Count: " << counter++ << std::endl;
         sleep_for(1s);
     }

@@ -13,22 +13,33 @@ const ws = new WebSocket('ws://localhost:8080');
 
 
 
+const Image: React.FC<{ data: string }> = ({ data }) => (
+  // <img width={720} height={480} src={`data:image/jpeg;base64,${data}`} />
+  <img src={`data:image/jpeg;base64,${data}`} />
+);
+
 let counter = 1;
 function App() {
-  const [events, setEvents] = useState<any[]>([]);
+  // const [events, setEvents] = useState<any[]>([]);
 
+    const [imgData, setImgData] = useState("");
     ws.onmessage = (event) => {
       console.log(event);
-      setEvents([event, ...events]);
+      // setEvents([event, ...events]);
+      const [type, data] = event.data.split(":");
+      if (type === "frame") {
+        setImgData(data);
+      }
     };
 
-
+    // src={`data:image/png;base64${window.btoa("123")}`}/>
   return (
     <div className="App">
       <header className="App-header">
-        <ul>
+        <Image data={imgData} />
+        {/* <ul>
           {events.map((e, idx) => <li key={idx}>{e.data}</li>)}
-        </ul>
+        </ul> */}
       </header>
     </div>
   );
