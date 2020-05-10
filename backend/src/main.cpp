@@ -20,38 +20,42 @@ using std::cerr;
 using std::endl;
 
 
+void log_info(std::string message);
+void log_error(std::string message);
+
 // https://www.codingame.com/playgrounds/5659/c17-filesystem
 namespace fs = std::filesystem;
 
 int main()
 {
+    // Get a list of files
     const fs::path picsPath = "/usr/pictures";
     if (!fs::exists(picsPath) || !fs::is_directory(picsPath)) {
-        cerr << "Directory " << picsPath << " could not be found" << endl;
+        log_error("Directory " + std::string(picsPath) + " could not be found");
         return 1;
     }
 
-    cout << "Listing contents of directory " << picsPath << endl;
+    log_info("Listing contents of directory " + std::string(picsPath));
     bool firstFile = true;
     for (const auto& entry : fs::directory_iterator(picsPath)) {
-        cout << "> (" << (fs::is_directory(entry) ? "DIR" : "FIL") << ")" << entry.path().filename() << endl;
+        log_info("> (" + std::string(fs::is_directory(entry) ? "DIR" : "FIL") + ")" + std::string(entry.path().filename()));
         if (!fs::is_directory(entry) && (entry.path().extension() == ".MP4" || entry.path().extension() == ".mp4") && firstFile) {
             firstFile = false;
-            cout << "Opening " << entry.path() << "..." << endl;
+            log_info("Opening " + std::string(entry.path()) + "...");
             cv::VideoCapture cap(entry.path());
             if (!cap.isOpened()) {
-                cout << "Error opening video stream or file" << endl;
+                log_error("Error opening video stream or file");
                 return -1;
             }
 
             double fps = cap.get(cv::CAP_PROP_FPS) / 0.5;
             const int waitTimeMs = 1000 / fps;
-            cout << fps << " - " << waitTimeMs << endl;
+            log_info(std::to_string(fps) + " - " + std::to_string(waitTimeMs));
 
 
             int counter = 0;
+            log_info("started");
             while (1) {
-                cout << "started" << endl;
                 cv::Mat frame;
                 cap >> frame;
 
@@ -66,7 +70,7 @@ int main()
 
                 // cout << "frame: " << frame << endl;
                 // cout << "frame: " << frame.reshape(0,1) << endl;
-                cout << "frame:" << encodedStr << endl;
+                cout << "frame|" << encodedStr << endl;
 
                 char c = cv::waitKey(waitTimeMs);
                 if (c == 88) break;
@@ -88,10 +92,20 @@ int main()
     using namespace std::this_thread;
     using namespace std::chrono_literals;
     int counter = 0;
-    cout << "Gunna start counting" << std::endl;
+    log_info("Gunna start counting");
     while (counter < 10) {
-        cout << "Count: " << counter++ << std::endl;
+        log_info("Count: " + std::to_string(counter++));
         sleep_for(1s);
     }
     return 0;
+}
+
+void log_info(std::string message)
+{
+    cout << "log|" << message << endl;
+}
+
+void log_error(std::string message)
+{
+    cerr << "error|" << message << endl;
 }
